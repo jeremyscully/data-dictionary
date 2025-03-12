@@ -176,6 +176,94 @@ namespace DataDictionary.Services
             }
         }
 
+        // Get tables for a database with pagination and view filtering
+        public async Task<(IEnumerable<TableDefinitionModel> Tables, int TotalCount)> GetTablesPagedAsync(int databaseId, int pageNumber, int pageSize, bool excludeViews)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    
+                    // First, get all database objects for this database
+                    var dbObjectsQuery = @"
+                        SELECT do.*, ot.TypeName as ObjectTypeName
+                        FROM dbo.DatabaseObjects do
+                        JOIN dbo.ObjectTypes ot ON do.ObjectTypeId = ot.ObjectTypeId
+                        WHERE do.DatabaseId = @DatabaseId";
+                        
+                    var dbObjects = await connection.QueryAsync<dynamic>(dbObjectsQuery, new { DatabaseId = databaseId });
+                    var dbObjectsDict = dbObjects.ToDictionary(o => (int)o.ObjectId, o => o);
+                    
+                    // Get total count for pagination
+                    var countQuery = @"
+                        SELECT COUNT(*)
+                        FROM dbo.TableDefinitions td
+                        JOIN dbo.DatabaseObjects do ON td.ObjectId = do.ObjectId
+                        JOIN dbo.ObjectTypes ot ON do.ObjectTypeId = ot.ObjectTypeId
+                        WHERE do.DatabaseId = @DatabaseId
+                        " + (excludeViews ? "AND td.IsView = 0" : "");
+
+                    var totalCount = await connection.ExecuteScalarAsync<int>(countQuery, new { DatabaseId = databaseId });
+                    
+                    // Then get tables with pagination
+                    var tablesQuery = @"
+                        SELECT td.*
+                        FROM dbo.TableDefinitions td
+                        JOIN dbo.DatabaseObjects do ON td.ObjectId = do.ObjectId
+                        JOIN dbo.ObjectTypes ot ON do.ObjectTypeId = ot.ObjectTypeId
+                        WHERE do.DatabaseId = @DatabaseId
+                        " + (excludeViews ? "AND td.IsView = 0" : "") + @"
+                        ORDER BY do.SchemaName, do.ObjectName
+                        OFFSET @Offset ROWS
+                        FETCH NEXT @PageSize ROWS ONLY";
+
+                    var offset = (pageNumber - 1) * pageSize;
+                    var tables = await connection.QueryAsync<TableDefinitionModel>(
+                        tablesQuery, 
+                        new { 
+                            DatabaseId = databaseId,
+                            Offset = offset,
+                            PageSize = pageSize
+                        });
+                    
+                    foreach (var table in tables)
+                    {
+                        // Get columns for each table
+                        table.Columns = (await GetColumnsAsync(table.TableId)).ToList();
+                        
+                        // Set the DatabaseObject property
+                        if (dbObjectsDict.TryGetValue(table.ObjectId, out var dbObject))
+                        {
+                            table.DatabaseObject = new DatabaseObjectModel
+                            {
+                                ObjectId = dbObject.ObjectId,
+                                DatabaseId = dbObject.DatabaseId,
+                                ObjectTypeId = dbObject.ObjectTypeId,
+                                SchemaName = dbObject.SchemaName,
+                                ObjectName = dbObject.ObjectName,
+                                Description = dbObject.Description,
+                                CreatedDate = dbObject.CreatedDate,
+                                ModifiedDate = dbObject.ModifiedDate,
+                                ObjectType = new ObjectTypeModel
+                                {
+                                    ObjectTypeId = dbObject.ObjectTypeId,
+                                    TypeName = dbObject.ObjectTypeName
+                                }
+                            };
+                        }
+                    }
+                    
+                    return (tables, totalCount);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving paged tables for database ID {DatabaseId}", databaseId);
+                throw;
+            }
+        }
+
         // Get table by ID
         public async Task<TableDefinitionModel> GetTableAsync(int tableId)
         {

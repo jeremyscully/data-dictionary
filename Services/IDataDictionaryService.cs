@@ -23,6 +23,7 @@ namespace DataDictionary.Services
         
         // Table operations
         Task<IEnumerable<TableDefinitionModel>> GetTablesAsync(int databaseId);
+        Task<(IEnumerable<TableDefinitionModel> Tables, int TotalCount)> GetTablesPagedAsync(int databaseId, int pageNumber, int pageSize, bool excludeViews);
         Task<TableDefinitionModel> GetTableAsync(int tableId);
         Task<int> AddOrGetTableDefinitionAsync(int objectId, bool isView, long? rowCount = null);
         Task<int> GetTableIdBySchemaAndNameAsync(int databaseId, string schema, string tableName);

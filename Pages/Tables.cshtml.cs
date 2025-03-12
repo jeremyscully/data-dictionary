@@ -16,6 +16,7 @@ namespace DataDictionary.Pages
     {
         private readonly IDataDictionaryService _dataDictionaryService;
         private readonly ILogger<TablesModel> _logger;
+        private const int DefaultPageSize = 20;
 
         public TablesModel(IDataDictionaryService dataDictionaryService, ILogger<TablesModel> logger)
         {
@@ -26,11 +27,19 @@ namespace DataDictionary.Pages
         [BindProperty(SupportsGet = true)]
         public int DatabaseId { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public int PageNumber { get; set; } = 1;
+
+        [BindProperty(SupportsGet = true)]
+        public bool ExcludeViews { get; set; } = true;
+
         public Models.DatabaseModel CurrentDatabase { get; set; }
         public List<Models.DatabaseModel> Databases { get; set; } = new List<Models.DatabaseModel>();
         public List<Models.TableDefinitionModel> Tables { get; set; } = new List<Models.TableDefinitionModel>();
         public string ErrorMessage { get; set; }
         public string SuccessMessage { get; set; }
+        public int TotalTables { get; set; }
+        public int TotalPages => (int)Math.Ceiling(TotalTables / (double)DefaultPageSize);
 
         public async Task OnGetAsync()
         {
@@ -49,12 +58,21 @@ namespace DataDictionary.Pages
                     // Get the current database
                     CurrentDatabase = await _dataDictionaryService.GetDatabaseAsync(DatabaseId);
 
-                    // Get tables for the selected database
-                    var tables = await _dataDictionaryService.GetTablesAsync(DatabaseId);
-                    if (tables != null)
+                    // Ensure page number is valid
+                    if (PageNumber < 1)
                     {
-                        Tables = tables.ToList();
+                        PageNumber = 1;
                     }
+
+                    // Get tables for the selected database with pagination and view filtering
+                    var result = await _dataDictionaryService.GetTablesPagedAsync(
+                        DatabaseId, 
+                        PageNumber, 
+                        DefaultPageSize, 
+                        ExcludeViews);
+                    
+                    Tables = result.Tables.ToList();
+                    TotalTables = result.TotalCount;
                 }
             }
             catch (Exception ex)

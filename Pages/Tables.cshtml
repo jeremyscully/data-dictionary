@@ -53,7 +53,7 @@
                 <h5>Database Selection</h5>
             </div>
             <div class="card-body">
-                <form method="get">
+                <form method="get" id="databaseForm">
                     <div class="form-group mb-3">
                         <label for="databaseId">Select Database:</label>
                         <select class="form-control" id="databaseId" name="databaseId" onchange="this.form.submit()">
@@ -76,8 +76,12 @@
 @if (Model.CurrentDatabase != null)
 {
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h5>Tables in @Model.CurrentDatabase.DatabaseName</h5>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="excludeViews" @(Model.ExcludeViews ? "checked" : "")>
+                <label class="form-check-label" for="excludeViews">Exclude Views</label>
+            </div>
         </div>
         <div class="card-body">
             @if (Model.Tables != null && Model.Tables.Any())
@@ -109,6 +113,37 @@
                         }
                     </tbody>
                 </table>
+                
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.PageNumber <= 1 ? "disabled" : "")">
+                                <a class="page-link" href="javascript:void(0)" onclick="navigateToPage(@(Model.PageNumber - 1))" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                                    <a class="page-link" href="javascript:void(0)" onclick="navigateToPage(@i)">@i</a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.PageNumber >= Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" href="javascript:void(0)" onclick="navigateToPage(@(Model.PageNumber + 1))" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+                
+                <div class="text-center mt-2">
+                    <small class="text-muted">Showing @((Model.PageNumber - 1) * 20 + 1) to @Math.Min(Model.PageNumber * 20, Model.TotalTables) of @Model.TotalTables tables</small>
+                </div>
             }
             else
             {
@@ -183,5 +218,42 @@ else
                 document.getElementById('password').value = '';
             }
         });
+        
+        // Handle exclude views toggle
+        document.getElementById('excludeViews').addEventListener('change', function() {
+            const form = document.getElementById('databaseForm');
+            const excludeViewsInput = document.createElement('input');
+            excludeViewsInput.type = 'hidden';
+            excludeViewsInput.name = 'excludeViews';
+            excludeViewsInput.value = this.checked;
+            form.appendChild(excludeViewsInput);
+            
+            // Reset to page 1 when filter changes
+            const pageNumberInput = document.createElement('input');
+            pageNumberInput.type = 'hidden';
+            pageNumberInput.name = 'pageNumber';
+            pageNumberInput.value = 1;
+            form.appendChild(pageNumberInput);
+            
+            form.submit();
+        });
+        
+        // Function to navigate between pages
+        function navigateToPage(pageNumber) {
+            const form = document.getElementById('databaseForm');
+            const pageNumberInput = document.createElement('input');
+            pageNumberInput.type = 'hidden';
+            pageNumberInput.name = 'pageNumber';
+            pageNumberInput.value = pageNumber;
+            form.appendChild(pageNumberInput);
+            
+            const excludeViewsInput = document.createElement('input');
+            excludeViewsInput.type = 'hidden';
+            excludeViewsInput.name = 'excludeViews';
+            excludeViewsInput.value = document.getElementById('excludeViews').checked;
+            form.appendChild(excludeViewsInput);
+            
+            form.submit();
+        }
     </script>
 } 
