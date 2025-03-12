@@ -1,0 +1,141 @@
+@page
+@model DataDictionary.Pages.Lineage.VisualizeModel
+@{
+    ViewData["Title"] = "Data Lineage Visualization";
+}
+
+<h1>Data Lineage Visualization</h1>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Select Database or Table</h5>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="databaseId">Database</label>
+                            <select id="databaseId" name="databaseId" class="form-control" asp-items="Model.Databases" onchange="this.form.submit()">
+                                <option value="">-- Select Database --</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="tableId">Table</label>
+                            <select id="tableId" name="tableId" class="form-control" asp-items="Model.Tables" onchange="this.form.submit()">
+                                <option value="">-- Select Table --</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="depth">Depth</label>
+                            <select id="depth" name="depth" class="form-control" onchange="this.form.submit()">
+                                <option value="1" selected="@(Model.Depth == 1)">1 Level</option>
+                                <option value="2" selected="@(Model.Depth == 2)">2 Levels</option>
+                                <option value="3" selected="@(Model.Depth == 3)">3 Levels</option>
+                                <option value="4" selected="@(Model.Depth == 4)">4 Levels</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.SelectedTable != null || Model.SelectedDatabase != null)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>
+                        @if (Model.SelectedTable != null)
+                        {
+                            <span>Lineage for Table: @Model.SelectedTable.TableName</span>
+                        }
+                        else
+                        {
+                            <span>Lineage for Database: @Model.SelectedDatabase.DatabaseName</span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="lineageVisualization" style="height: 600px; border: 1px solid #ccc;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (Model.SelectedTable != null || Model.SelectedDatabase != null)
+            {
+                <text>
+                // Create nodes and edges arrays for visualization
+                const nodes = new vis.DataSet(@Html.Raw(Model.NodesJson));
+                const edges = new vis.DataSet(@Html.Raw(Model.EdgesJson));
+
+                // Create a network
+                const container = document.getElementById('lineageVisualization');
+                const data = {
+                    nodes: nodes,
+                    edges: edges
+                };
+                
+                const options = {
+                    nodes: {
+                        shape: 'box',
+                        margin: 10,
+                        font: {
+                            size: 14
+                        }
+                    },
+                    edges: {
+                        arrows: {
+                            to: { enabled: true, scaleFactor: 1 }
+                        },
+                        font: {
+                            size: 12,
+                            align: 'middle'
+                        },
+                        smooth: {
+                            type: 'cubicBezier',
+                            forceDirection: 'horizontal'
+                        }
+                    },
+                    layout: {
+                        hierarchical: {
+                            direction: 'LR',
+                            sortMethod: 'directed',
+                            levelSeparation: 200
+                        }
+                    },
+                    physics: {
+                        hierarchicalRepulsion: {
+                            nodeDistance: 150
+                        }
+                    }
+                };
+                
+                const network = new vis.Network(container, data, options);
+                
+                // Add click event to navigate to table details
+                network.on('click', function(params) {
+                    if (params.nodes.length > 0) {
+                        const nodeId = params.nodes[0];
+                        const node = nodes.get(nodeId);
+                        
+                        if (node.url) {
+                            window.location.href = node.url;
+                        }
+                    }
+                });
+                </text>
+            }
+        });
+    </script>
+} 

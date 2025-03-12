@@ -1,0 +1,110 @@
+@page "{id:int}"
+@model DataDictionary.Pages.Lineage.DeleteModel
+@{
+    ViewData["Title"] = "Delete Lineage Relationship";
+}
+
+<h1>Delete Lineage Relationship</h1>
+
+<div class="alert alert-danger">
+    <h4>Are you sure you want to delete this lineage relationship?</h4>
+    <p>This action cannot be undone.</p>
+</div>
+
+<div>
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Lineage Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Lineage Type</dt>
+                        <dd class="col-sm-9">@Model.LineageRelationship.LineageType.TypeName</dd>
+                        
+                        @if (!string.IsNullOrEmpty(Model.LineageRelationship.TransformationDescription))
+                        {
+                            <dt class="col-sm-3">Transformation Description</dt>
+                            <dd class="col-sm-9">@Model.LineageRelationship.TransformationDescription</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Source</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.LineageRelationship.SourceDatabase != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Database</h6>
+                            <p>@Model.LineageRelationship.SourceDatabase.DatabaseName</p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.SourceTable != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Table</h6>
+                            <p>@Model.LineageRelationship.SourceTable.TableName</p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.SourceColumn != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Column</h6>
+                            <p>@Model.LineageRelationship.SourceColumn.ColumnName</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5>Target</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.LineageRelationship.TargetDatabase != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Database</h6>
+                            <p>@Model.LineageRelationship.TargetDatabase.DatabaseName</p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.TargetTable != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Table</h6>
+                            <p>@Model.LineageRelationship.TargetTable.TableName</p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.TargetColumn != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Column</h6>
+                            <p>@Model.LineageRelationship.TargetColumn.ColumnName</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="LineageRelationship.LineageId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-page="./Index" class="btn btn-secondary">Cancel</a>
+</form> 

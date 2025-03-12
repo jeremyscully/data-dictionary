@@ -1,0 +1,411 @@
+@page
+@model DataDictionary.Pages.Lineage.CreateModel
+@{
+    ViewData["Title"] = "Create Data Lineage Relationship";
+}
+
+<h1>Create Data Lineage Relationship</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Lineage Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="LineageRelationship.LineageTypeId" class="control-label">Lineage Type</label>
+                        <select asp-for="LineageRelationship.LineageTypeId" class="form-control" 
+                                asp-items="Model.LineageTypes" onchange="handleLineageTypeChange()">
+                            <option value="">-- Select Lineage Type --</option>
+                        </select>
+                        <span asp-validation-for="LineageRelationship.LineageTypeId" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="form-group" id="transformationDescriptionGroup" style="display: none;">
+                        <label asp-for="LineageRelationship.TransformationDescription" class="control-label">Transformation Description</label>
+                        <textarea asp-for="LineageRelationship.TransformationDescription" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="LineageRelationship.TransformationDescription" class="text-danger"></span>
+                        <small class="form-text text-muted">Describe how the source data is transformed to create the target data.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Source</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="LineageRelationship.SourceDatabaseId" class="control-label">Source Database</label>
+                                <select asp-for="LineageRelationship.SourceDatabaseId" class="form-control" 
+                                        asp-items="Model.Databases" id="sourceDatabase" onchange="loadSourceTables()">
+                                    <option value="">-- Select Database --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="LineageRelationship.SourceTableId" class="control-label">Source Table</label>
+                                <select asp-for="LineageRelationship.SourceTableId" class="form-control" id="sourceTable" 
+                                        asp-items="Model.SourceTables" onchange="loadSourceColumns()">
+                                    <option value="">-- Select Table --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="LineageRelationship.SourceColumnId" class="control-label">Source Column</label>
+                                <select asp-for="LineageRelationship.SourceColumnId" class="form-control" id="sourceColumn" 
+                                        asp-items="Model.SourceColumns">
+                                    <option value="">-- Select Column --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Target</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label asp-for="LineageRelationship.TargetDatabaseId" class="control-label">Target Database</label>
+                                <select asp-for="LineageRelationship.TargetDatabaseId" class="form-control" 
+                                        asp-items="Model.Databases" id="targetDatabase" onchange="loadTargetTables()">
+                                    <option value="">-- Select Database --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="LineageRelationship.TargetTableId" class="control-label">Target Table</label>
+                                <select asp-for="LineageRelationship.TargetTableId" class="form-control" id="targetTable" 
+                                        disabled onchange="loadTargetColumns()">
+                                    <option value="">-- Select Table --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="LineageRelationship.TargetColumnId" class="control-label">Target Column</label>
+                                <select asp-for="LineageRelationship.TargetColumnId" class="form-control" id="targetColumn" disabled>
+                                    <option value="">-- Select Column --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Show/hide transformation description based on lineage type
+        function handleLineageTypeChange() {
+            const lineageTypeId = document.getElementById('LineageRelationship_LineageTypeId').value;
+            const descriptionGroup = document.getElementById('transformationDescriptionGroup');
+            
+            console.log(`Lineage type changed to: ${lineageTypeId}`);
+            
+            // Show description for Aggregated (2) and Computation (3) types
+            if (lineageTypeId === '2' || lineageTypeId === '3') {
+                descriptionGroup.style.display = 'block';
+            } else {
+                descriptionGroup.style.display = 'none';
+            }
+        }
+        
+        // Load tables for selected source database
+        function loadSourceTables() {
+            const databaseId = document.getElementById('sourceDatabase').value;
+            const tableSelect = document.getElementById('sourceTable');
+            const columnSelect = document.getElementById('sourceColumn');
+            
+            console.log(`Loading source tables for database ID: ${databaseId}`);
+            
+            // Reset and disable dependent dropdowns
+            tableSelect.innerHTML = '<option value="">-- Select Table --</option>';
+            columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+            columnSelect.disabled = true;
+            
+            if (!databaseId) {
+                tableSelect.disabled = true;
+                return;
+            }
+            
+            // Enable table dropdown and load tables
+            tableSelect.disabled = false;
+            
+            console.log(`Fetching tables for database ID: ${databaseId}`);
+            fetch(`/api/tables-data/database/${databaseId}`)
+                .then(response => {
+                    console.log(`Tables API response status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}, StatusText: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Received ${data.length} tables:`, data);
+                    if (data.length === 0) {
+                        console.log('No tables found for this database');
+                        tableSelect.innerHTML = '<option value="">No tables available</option>';
+                    } else {
+                        // Add the default option back
+                        tableSelect.innerHTML = '<option value="">-- Select Table --</option>';
+                        
+                        data.forEach(table => {
+                            const option = document.createElement('option');
+                            option.value = table.tableId;
+                            option.textContent = table.tableName || `Table_${table.tableId}`;
+                            tableSelect.appendChild(option);
+                        });
+                        
+                        // If we have a pre-selected table value, select it and load columns
+                        const preSelectedTableId = '@Model.LineageRelationship.SourceTableId';
+                        if (preSelectedTableId && preSelectedTableId !== '0') {
+                            console.log(`Pre-selected table ID: ${preSelectedTableId}`);
+                            tableSelect.value = preSelectedTableId;
+                            loadSourceColumns();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading tables:', error);
+                    // Add a message to the UI
+                    tableSelect.innerHTML = '<option value="">Error loading tables</option>';
+                });
+        }
+        
+        // Load columns for selected source table
+        function loadSourceColumns() {
+            const tableId = document.getElementById('sourceTable').value;
+            const columnSelect = document.getElementById('sourceColumn');
+            
+            console.log(`Loading source columns for table ID: ${tableId}`);
+            
+            // Reset column dropdown
+            columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+            
+            if (!tableId) {
+                columnSelect.disabled = true;
+                return;
+            }
+            
+            // Enable column dropdown and load columns
+            columnSelect.disabled = false;
+            
+            console.log(`Fetching columns for table ID: ${tableId}`);
+            fetch(`/api/columns-data/table/${tableId}`)
+                .then(response => {
+                    console.log(`Columns API response status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}, StatusText: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Received ${data.length} columns:`, data);
+                    if (data.length === 0) {
+                        console.log('No columns found for this table');
+                        columnSelect.innerHTML = '<option value="">No columns available</option>';
+                    } else {
+                        // Add the default option back
+                        columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+                        
+                        data.forEach(column => {
+                            const option = document.createElement('option');
+                            option.value = column.columnId;
+                            option.textContent = column.columnName;
+                            columnSelect.appendChild(option);
+                        });
+                        
+                        // If we have a pre-selected column value, select it
+                        const preSelectedColumnId = '@Model.LineageRelationship.SourceColumnId';
+                        if (preSelectedColumnId && preSelectedColumnId !== '0') {
+                            console.log(`Pre-selected column ID: ${preSelectedColumnId}`);
+                            columnSelect.value = preSelectedColumnId;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading columns:', error);
+                    // Add a message to the UI
+                    columnSelect.innerHTML = '<option value="">Error loading columns</option>';
+                });
+        }
+        
+        // Load tables for selected target database
+        function loadTargetTables() {
+            const databaseId = document.getElementById('targetDatabase').value;
+            const tableSelect = document.getElementById('targetTable');
+            const columnSelect = document.getElementById('targetColumn');
+            
+            console.log(`Loading target tables for database ID: ${databaseId}`);
+            
+            // Reset and disable dependent dropdowns
+            tableSelect.innerHTML = '<option value="">-- Select Table --</option>';
+            columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+            columnSelect.disabled = true;
+            
+            if (!databaseId) {
+                tableSelect.disabled = true;
+                return;
+            }
+            
+            // Enable table dropdown and load tables
+            tableSelect.disabled = false;
+            
+            console.log(`Fetching tables for target database ID: ${databaseId}`);
+            fetch(`/api/tables-data/database/${databaseId}`)
+                .then(response => {
+                    console.log(`Target tables API response status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}, StatusText: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Received ${data.length} target tables:`, data);
+                    if (data.length === 0) {
+                        console.log('No tables found for this target database');
+                        tableSelect.innerHTML = '<option value="">No tables available</option>';
+                    } else {
+                        // Add the default option back
+                        tableSelect.innerHTML = '<option value="">-- Select Table --</option>';
+                        
+                        data.forEach(table => {
+                            const option = document.createElement('option');
+                            option.value = table.tableId;
+                            option.textContent = table.tableName || `Table_${table.tableId}`;
+                            tableSelect.appendChild(option);
+                        });
+                        
+                        // If we have a pre-selected table value, select it and load columns
+                        const preSelectedTableId = '@Model.LineageRelationship.TargetTableId';
+                        if (preSelectedTableId && preSelectedTableId !== '0') {
+                            console.log(`Pre-selected target table ID: ${preSelectedTableId}`);
+                            tableSelect.value = preSelectedTableId;
+                            loadTargetColumns();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading target tables:', error);
+                    // Add a message to the UI
+                    tableSelect.innerHTML = '<option value="">Error loading tables</option>';
+                });
+        }
+        
+        // Load columns for selected target table
+        function loadTargetColumns() {
+            const tableId = document.getElementById('targetTable').value;
+            const columnSelect = document.getElementById('targetColumn');
+            
+            console.log(`Loading target columns for table ID: ${tableId}`);
+            
+            // Reset column dropdown
+            columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+            
+            if (!tableId) {
+                columnSelect.disabled = true;
+                return;
+            }
+            
+            // Enable column dropdown and load columns
+            columnSelect.disabled = false;
+            
+            console.log(`Fetching columns for target table ID: ${tableId}`);
+            fetch(`/api/columns-data/table/${tableId}`)
+                .then(response => {
+                    console.log(`Target columns API response status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}, StatusText: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Received ${data.length} target columns:`, data);
+                    if (data.length === 0) {
+                        console.log('No columns found for this target table');
+                        columnSelect.innerHTML = '<option value="">No columns available</option>';
+                    } else {
+                        // Add the default option back
+                        columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+                        
+                        data.forEach(column => {
+                            const option = document.createElement('option');
+                            option.value = column.columnId;
+                            option.textContent = column.columnName;
+                            columnSelect.appendChild(option);
+                        });
+                        
+                        // If we have a pre-selected column value, select it
+                        const preSelectedColumnId = '@Model.LineageRelationship.TargetColumnId';
+                        if (preSelectedColumnId && preSelectedColumnId !== '0') {
+                            console.log(`Pre-selected target column ID: ${preSelectedColumnId}`);
+                            columnSelect.value = preSelectedColumnId;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading target columns:', error);
+                    // Add a message to the UI
+                    columnSelect.innerHTML = '<option value="">Error loading columns</option>';
+                });
+        }
+        
+        // Initialize the form
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM content loaded, initializing form...');
+            
+            // Initialize lineage type dropdown
+            handleLineageTypeChange();
+            
+            // Initialize source dropdowns if pre-selected
+            const sourceDatabaseSelect = document.getElementById('sourceDatabase');
+            const sourceTableSelect = document.getElementById('sourceTable');
+            const sourceColumnSelect = document.getElementById('sourceColumn');
+            
+            console.log(`Source database value: ${sourceDatabaseSelect.value}`);
+            
+            if (sourceDatabaseSelect.value) {
+                // If database is pre-selected, load tables
+                console.log('Source database is pre-selected, loading tables...');
+                loadSourceTables();
+            }
+            
+            // Initialize target dropdowns if pre-selected
+            const targetDatabaseSelect = document.getElementById('targetDatabase');
+            const targetTableSelect = document.getElementById('targetTable');
+            const targetColumnSelect = document.getElementById('targetColumn');
+            
+            console.log(`Target database value: ${targetDatabaseSelect.value}`);
+            
+            if (targetDatabaseSelect.value) {
+                // If database is pre-selected, load tables
+                console.log('Target database is pre-selected, loading tables...');
+                loadTargetTables();
+            }
+            
+            // Check if we're coming from a source column selection
+            const sourceColumnId = '@Request.Query["sourceColumnId"]';
+            if (sourceColumnId && sourceColumnId !== '') {
+                console.log(`Source column ID from query: ${sourceColumnId}`);
+            }
+        });
+    </script>
+} 

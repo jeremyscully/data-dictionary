@@ -1,0 +1,89 @@
+@page
+@model DataDictionary.Pages.DatabaseModel
+@{
+    ViewData["Title"] = "Database Information";
+}
+
+<h1>Database Information</h1>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Servers</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Servers != null && Model.Servers.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Server ID</th>
+                                <th>Server Name</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var server in Model.Servers)
+                            {
+                                <tr>
+                                    <td>@server.ServerId</td>
+                                    <td>@server.ServerName</td>
+                                    <td>@server.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No servers found.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Databases</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.DatabaseModelList != null && Model.DatabaseModelList.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Database ID</th>
+                                <th>Database Name</th>
+                                <th>Server</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var database in Model.DatabaseModelList)
+                            {
+                                <tr>
+                                    <td>@database.DatabaseId</td>
+                                    <td>@database.DatabaseName</td>
+                                    <td>@database.Server?.ServerName</td>
+                                    <td>@database.Description</td>
+                                    <td>
+                                        <a asp-page="/Tables" asp-route-databaseId="@database.DatabaseId" class="btn btn-sm btn-primary">View Tables</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No databases found.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div> 

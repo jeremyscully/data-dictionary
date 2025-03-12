@@ -1,0 +1,81 @@
+@page
+@model DataDictionary.Pages.SettingsModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<h1>Settings</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Theme Settings</h5>
+            </div>
+            <div class="card-body">
+                <p>Current Theme: <span id="current-theme-name">Default</span></p>
+                
+                <p>Choose a theme for the Data Dictionary application:</p>
+                
+                <div class="theme-switcher">
+                    <div class="col-md-4">
+                        <div class="theme-option active" data-theme="default">
+                            <img src="~/images/default-theme.svg" alt="Default Theme" class="img-fluid">
+                            <div class="theme-option-label">Default</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="theme-option" data-theme="netflix">
+                            <img src="~/images/netflix-theme.svg" alt="Netflix Theme" class="img-fluid">
+                            <div class="theme-option-label">Netflix</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="theme-option" data-theme="seattle-housing">
+                            <img src="~/images/seattle-housing-theme.svg" alt="Seattle Housing Authority Theme" class="img-fluid">
+                            <div class="theme-option-label">Seattle Housing Authority</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-muted">Theme preferences are saved automatically and will persist between sessions.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">About Themes</h5>
+            </div>
+            <div class="card-body">
+                <p>The Data Dictionary application supports multiple themes to customize your experience:</p>
+                
+                <ul>
+                    <li><strong>Default Theme</strong> - The standard light theme with blue accents.</li>
+                    <li><strong>Netflix Theme</strong> - A dark theme inspired by Netflix with red accents.</li>
+                    <li><strong>Seattle Housing Authority</strong> - A professional theme with bold blue colors.</li>
+                </ul>
+                
+                <p>More themes will be added in future updates.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Help</h5>
+            </div>
+            <div class="card-body">
+                <p>If you encounter any issues with themes or have suggestions for new themes, please contact the administrator.</p>
+                
+                <p>You can reset to the default theme by clearing your browser's local storage or by selecting the Default theme option.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Theme switcher script is now included in the layout file -->
+} 

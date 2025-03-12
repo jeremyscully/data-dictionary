@@ -1,0 +1,30 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="300" height="200" fill="#141414" />
+  
+  <!-- Header -->
+  <rect width="300" height="40" fill="#000000" stroke="#333333" stroke-width="1" />
+  <text x="20" y="25" font-family="Arial" font-size="14" fill="#ffffff">Data Dictionary</text>
+  
+  <!-- Navigation -->
+  <rect x="150" y="15" width="50" height="10" fill="#e50914" rx="2" ry="2" />
+  <rect x="210" y="15" width="50" height="10" fill="#564d4d" rx="2" ry="2" />
+  
+  <!-- Content Area -->
+  <rect x="20" y="60" width="260" height="100" fill="#181818" stroke="#333333" stroke-width="1" rx="4" ry="4" />
+  <text x="30" y="80" font-family="Arial" font-size="12" fill="#ffffff">Netflix Theme</text>
+  <rect x="30" y="90" width="240" height="1" fill="#333333" />
+  
+  <!-- Content Elements -->
+  <rect x="30" y="100" width="100" height="10" fill="#333333" rx="2" ry="2" />
+  <rect x="30" y="120" width="80" height="10" fill="#333333" rx="2" ry="2" />
+  <rect x="30" y="140" width="120" height="10" fill="#333333" rx="2" ry="2" />
+  
+  <!-- Button -->
+  <rect x="200" y="130" width="60" height="20" fill="#e50914" rx="4" ry="4" />
+  <text x="215" y="144" font-family="Arial" font-size="10" fill="#ffffff">Button</text>
+  
+  <!-- Footer -->
+  <rect y="180" width="300" height="20" fill="#000000" />
+  <text x="20" y="194" font-family="Arial" font-size="10" fill="#999999">Footer</text>
+</svg> 

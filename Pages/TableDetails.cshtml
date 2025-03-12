@@ -1,0 +1,418 @@
+@page
+@model DataDictionary.Pages.TableDetailsModel
+@{
+    ViewData["Title"] = "Table Details";
+}
+
+<h1>Table Details</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.ErrorMessage
+    </div>
+}
+
+@if (Model.Table != null)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Table Information</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Database:</dt>
+                <dd class="col-sm-9">@Model.Table.DatabaseObject?.Database?.DatabaseName</dd>
+
+                <dt class="col-sm-3">Schema:</dt>
+                <dd class="col-sm-9">@Model.Table.DatabaseObject?.SchemaName</dd>
+
+                <dt class="col-sm-3">Table Name:</dt>
+                <dd class="col-sm-9">@Model.Table.DatabaseObject?.ObjectName</dd>
+
+                <dt class="col-sm-3">Type:</dt>
+                <dd class="col-sm-9">@Model.Table.DatabaseObject?.ObjectType?.TypeName</dd>
+
+                <dt class="col-sm-3">Row Count:</dt>
+                <dd class="col-sm-9">@Model.Table.RowCount</dd>
+
+                <dt class="col-sm-3">Description:</dt>
+                <dd class="col-sm-9">@Model.Table.DatabaseObject?.Description</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Columns</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Columns != null && Model.Columns.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Data Type</th>
+                            <th>Max Length</th>
+                            <th>Precision</th>
+                            <th>Scale</th>
+                            <th>Is Nullable</th>
+                            <th>Has Default</th>
+                            <th>Default Value</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var column in Model.Columns)
+                        {
+                            <tr>
+                                <td>@column.ColumnName</td>
+                                <td>@column.DataType?.TypeName</td>
+                                <td>@column.MaxLength</td>
+                                <td>@column.Precision</td>
+                                <td>@column.Scale</td>
+                                <td>@(column.IsNullable ? "Yes" : "No")</td>
+                                <td>@(column.HasDefault ? "Yes" : "No")</td>
+                                <td>@column.DefaultValue</td>
+                                <td>@column.Description</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#lineageModal" 
+                                            data-column-id="@column.ColumnId" 
+                                            data-column-name="@column.ColumnName"
+                                            data-table-id="@Model.Table.TableId"
+                                            data-table-name="@Model.Table.DatabaseObject?.ObjectName">
+                                        Lineage
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No columns found for this table.</p>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Parent Relationships</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ParentRelationships != null && Model.ParentRelationships.Any())
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Relationship Name</th>
+                                    <th>Parent Table</th>
+                                    <th>Parent Column</th>
+                                    <th>Child Column</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var rel in Model.ParentRelationships)
+                                {
+                                    <tr>
+                                        <td>@rel.ConstraintName</td>
+                                        <td>@rel.ParentTable?.DatabaseObject?.ObjectName</td>
+                                        <td>@rel.ParentColumn?.ColumnName</td>
+                                        <td>@rel.ChildColumn?.ColumnName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No parent relationships found for this table.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Child Relationships</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ChildRelationships != null && Model.ChildRelationships.Any())
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Relationship Name</th>
+                                    <th>Child Table</th>
+                                    <th>Parent Column</th>
+                                    <th>Child Column</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var rel in Model.ChildRelationships)
+                                {
+                                    <tr>
+                                        <td>@rel.ConstraintName</td>
+                                        <td>@rel.ChildTable?.DatabaseObject?.ObjectName</td>
+                                        <td>@rel.ParentColumn?.ColumnName</td>
+                                        <td>@rel.ChildColumn?.ColumnName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No child relationships found for this table.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        Table not found. <a asp-page="/Tables">Return to Tables</a>
+    </div>
+}
+
+<!-- Column Lineage Modal -->
+<div class="modal fade" id="lineageModal" tabindex="-1" aria-labelledby="lineageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lineageModalLabel">Column Lineage</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="lineageLoading" class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p>Loading lineage data...</p>
+                </div>
+                
+                <div id="lineageContent" style="display: none;">
+                    <ul class="nav nav-tabs" id="columnLineageTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="source-lineage-tab" data-bs-toggle="tab" href="#sourceLineage" role="tab">
+                                Source Lineage
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="target-lineage-tab" data-bs-toggle="tab" href="#targetLineage" role="tab">
+                                Target Lineage
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3">
+                        <div class="tab-pane fade show active" id="sourceLineage" role="tabpanel">
+                            <div id="noSourceLineage" class="alert alert-info" style="display: none;">
+                                No source lineage relationships defined for this column.
+                            </div>
+                            <div id="sourceLineageTable" class="table-responsive" style="display: none;">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Source</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sourceLineageBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="targetLineage" role="tabpanel">
+                            <div id="noTargetLineage" class="alert alert-info" style="display: none;">
+                                No target lineage relationships defined for this column.
+                            </div>
+                            <div id="targetLineageTable" class="table-responsive" style="display: none;">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Target</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="targetLineageBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="noLineageContent" class="text-center" style="display: none;">
+                    <p>No lineage relationships found for this column.</p>
+                    <div id="lineageError" class="alert alert-danger" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="addLineageLink" href="#" class="btn btn-primary">Add Lineage</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the modal element
+            var lineageModal = document.getElementById('lineageModal');
+            
+            // Add event listener for when the modal is shown
+            lineageModal.addEventListener('show.bs.modal', function (event) {
+                // Get the button that triggered the modal
+                var button = event.relatedTarget;
+                
+                // Extract data attributes
+                var columnId = button.getAttribute('data-column-id');
+                var columnName = button.getAttribute('data-column-name');
+                var tableId = button.getAttribute('data-table-id');
+                var tableName = button.getAttribute('data-table-name');
+                
+                // Update modal title
+                var modalTitle = lineageModal.querySelector('.modal-title');
+                modalTitle.textContent = 'Lineage for Column: ' + columnName;
+                
+                // Show loading indicator
+                document.getElementById('lineageLoading').style.display = 'block';
+                document.getElementById('lineageContent').style.display = 'none';
+                document.getElementById('noLineageContent').style.display = 'none';
+                document.getElementById('lineageError').style.display = 'none';
+                
+                // Set the Add Lineage link
+                document.getElementById('addLineageLink').href = '/Lineage/Create?sourceColumnId=' + columnId;
+                
+                // Fetch lineage data via AJAX
+                fetch('/api/lineage/column/' + columnId)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        document.getElementById('lineageLoading').style.display = 'none';
+                        
+                        if (!data || !data.sourceLineages || !data.targetLineages || 
+                            (data.sourceLineages.length === 0 && data.targetLineages.length === 0)) {
+                            document.getElementById('noLineageContent').style.display = 'block';
+                        } else {
+                            document.getElementById('lineageContent').style.display = 'block';
+                            
+                            // Process source lineages
+                            var sourceLineageElement = document.getElementById('noSourceLineage');
+                            var sourceTableElement = document.getElementById('sourceLineageTable');
+                            var sourceBodyElement = document.getElementById('sourceLineageBody');
+                            
+                            if (!data.sourceLineages || data.sourceLineages.length === 0) {
+                                if (sourceLineageElement) sourceLineageElement.style.display = 'block';
+                                if (sourceTableElement) sourceTableElement.style.display = 'none';
+                            } else {
+                                if (sourceLineageElement) sourceLineageElement.style.display = 'none';
+                                if (sourceTableElement) sourceTableElement.style.display = 'block';
+                                
+                                var sourceHtml = '';
+                                data.sourceLineages.forEach(function(lineage) {
+                                    sourceHtml += '<tr>';
+                                    sourceHtml += '<td>' + (lineage.lineageType ? lineage.lineageType.typeName : 'N/A') + '</td>';
+                                    sourceHtml += '<td>';
+                                    
+                                    if (lineage.sourceDatabase) {
+                                        sourceHtml += '<div><strong>Database:</strong> ' + (lineage.sourceDatabase.databaseName || 'N/A') + '</div>';
+                                    }
+                                    if (lineage.sourceTable && lineage.sourceTable.databaseObject) {
+                                        sourceHtml += '<div><strong>Table:</strong> ' + (lineage.sourceTable.databaseObject.objectName || 'N/A') + '</div>';
+                                    }
+                                    if (lineage.sourceColumn) {
+                                        sourceHtml += '<div><strong>Column:</strong> ' + (lineage.sourceColumn.columnName || 'N/A') + '</div>';
+                                    }
+                                    
+                                    sourceHtml += '</td>';
+                                    sourceHtml += '<td>' + (lineage.transformationDescription || '<span class="text-muted">N/A</span>') + '</td>';
+                                    sourceHtml += '<td><a href="/Lineage/Details?id=' + lineage.lineageId + '" class="btn btn-sm btn-info">Details</a></td>';
+                                    sourceHtml += '</tr>';
+                                });
+                                
+                                if (sourceBodyElement) sourceBodyElement.innerHTML = sourceHtml;
+                            }
+                            
+                            // Process target lineages
+                            var targetLineageElement = document.getElementById('noTargetLineage');
+                            var targetTableElement = document.getElementById('targetLineageTable');
+                            var targetBodyElement = document.getElementById('targetLineageBody');
+                            
+                            if (!data.targetLineages || data.targetLineages.length === 0) {
+                                if (targetLineageElement) targetLineageElement.style.display = 'block';
+                                if (targetTableElement) targetTableElement.style.display = 'none';
+                            } else {
+                                if (targetLineageElement) targetLineageElement.style.display = 'none';
+                                if (targetTableElement) targetTableElement.style.display = 'block';
+                                
+                                var targetHtml = '';
+                                data.targetLineages.forEach(function(lineage) {
+                                    targetHtml += '<tr>';
+                                    targetHtml += '<td>' + (lineage.lineageType ? lineage.lineageType.typeName : 'N/A') + '</td>';
+                                    targetHtml += '<td>';
+                                    
+                                    if (lineage.targetDatabase) {
+                                        targetHtml += '<div><strong>Database:</strong> ' + (lineage.targetDatabase.databaseName || 'N/A') + '</div>';
+                                    }
+                                    if (lineage.targetTable && lineage.targetTable.databaseObject) {
+                                        targetHtml += '<div><strong>Table:</strong> ' + (lineage.targetTable.databaseObject.objectName || 'N/A') + '</div>';
+                                    }
+                                    if (lineage.targetColumn) {
+                                        targetHtml += '<div><strong>Column:</strong> ' + (lineage.targetColumn.columnName || 'N/A') + '</div>';
+                                    }
+                                    
+                                    targetHtml += '</td>';
+                                    targetHtml += '<td>' + (lineage.transformationDescription || '<span class="text-muted">N/A</span>') + '</td>';
+                                    targetHtml += '<td><a href="/Lineage/Details?id=' + lineage.lineageId + '" class="btn btn-sm btn-info">Details</a></td>';
+                                    targetHtml += '</tr>';
+                                });
+                                
+                                if (targetBodyElement) targetBodyElement.innerHTML = targetHtml;
+                            }
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error fetching lineage data:', error);
+                        document.getElementById('lineageLoading').style.display = 'none';
+                        document.getElementById('lineageContent').style.display = 'none';
+                        document.getElementById('noLineageContent').style.display = 'block';
+                        var errorElement = document.getElementById('lineageError');
+                        if (errorElement) {
+                            errorElement.style.display = 'block';
+                            errorElement.textContent = 'Error loading lineage data: ' + error.message;
+                        }
+                    });
+            });
+            
+            // Clear modal content when it's closed
+            lineageModal.addEventListener('hidden.bs.modal', function () {
+                var sourceBodyElement = document.getElementById('sourceLineageBody');
+                var targetBodyElement = document.getElementById('targetLineageBody');
+                if (sourceBodyElement) sourceBodyElement.innerHTML = '';
+                if (targetBodyElement) targetBodyElement.innerHTML = '';
+            });
+        });
+    </script>
+} 

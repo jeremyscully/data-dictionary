@@ -1,0 +1,146 @@
+@page "{id:int}"
+@model DataDictionary.Pages.Lineage.DetailsModel
+@{
+    ViewData["Title"] = "Lineage Details";
+}
+
+<h1>Lineage Details</h1>
+
+<div>
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Lineage Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Lineage Type</dt>
+                        <dd class="col-sm-9">@Model.LineageRelationship.LineageType.TypeName</dd>
+                        
+                        @if (!string.IsNullOrEmpty(Model.LineageRelationship.TransformationDescription))
+                        {
+                            <dt class="col-sm-3">Transformation Description</dt>
+                            <dd class="col-sm-9">@Model.LineageRelationship.TransformationDescription</dd>
+                        }
+                        
+                        <dt class="col-sm-3">Created Date</dt>
+                        <dd class="col-sm-9">@Model.LineageRelationship.CreatedDate.ToString("g")</dd>
+                        
+                        <dt class="col-sm-3">Last Modified</dt>
+                        <dd class="col-sm-9">@Model.LineageRelationship.ModifiedDate.ToString("g")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Source</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.LineageRelationship.SourceDatabase != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Database</h6>
+                            <p>
+                                <a asp-page="/Databases/Details" asp-route-id="@Model.LineageRelationship.SourceDatabaseId">
+                                    @Model.LineageRelationship.SourceDatabase.DatabaseName
+                                </a>
+                            </p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.SourceTable != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Table</h6>
+                            <p>
+                                <a asp-page="/Tables/Details" asp-route-id="@Model.LineageRelationship.SourceTableId">
+                                    @Model.LineageRelationship.SourceTable.TableName
+                                </a>
+                            </p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.SourceColumn != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Column</h6>
+                            <p>
+                                <a asp-page="/Tables/Details" asp-route-id="@Model.LineageRelationship.SourceTable.TableId" 
+                                   asp-fragment="column-@Model.LineageRelationship.SourceColumnId">
+                                    @Model.LineageRelationship.SourceColumn.ColumnName
+                                </a>
+                            </p>
+                            <p>
+                                <small class="text-muted">
+                                    Data Type: @(Model.LineageRelationship.SourceColumn.DataType?.TypeName ?? "Unknown")
+                                </small>
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5>Target</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.LineageRelationship.TargetDatabase != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Database</h6>
+                            <p>
+                                <a asp-page="/Databases/Details" asp-route-id="@Model.LineageRelationship.TargetDatabaseId">
+                                    @Model.LineageRelationship.TargetDatabase.DatabaseName
+                                </a>
+                            </p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.TargetTable != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Table</h6>
+                            <p>
+                                <a asp-page="/Tables/Details" asp-route-id="@Model.LineageRelationship.TargetTableId">
+                                    @Model.LineageRelationship.TargetTable.TableName
+                                </a>
+                            </p>
+                        </div>
+                    }
+                    
+                    @if (Model.LineageRelationship.TargetColumn != null)
+                    {
+                        <div class="mb-3">
+                            <h6>Column</h6>
+                            <p>
+                                <a asp-page="/Tables/Details" asp-route-id="@Model.LineageRelationship.TargetTable.TableId" 
+                                   asp-fragment="column-@Model.LineageRelationship.TargetColumnId">
+                                    @Model.LineageRelationship.TargetColumn.ColumnName
+                                </a>
+                            </p>
+                            <p>
+                                <small class="text-muted">
+                                    Data Type: @(Model.LineageRelationship.TargetColumn.DataType?.TypeName ?? "Unknown")
+                                </small>
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.LineageRelationship.LineageId" class="btn btn-primary">Edit</a>
+    <a asp-page="./Index" class="btn btn-secondary">Back to List</a>
+</div> 

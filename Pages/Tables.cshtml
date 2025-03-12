@@ -1,0 +1,187 @@
+@page
+@model DataDictionary.Pages.TablesModel
+@{
+    ViewData["Title"] = "Database Tables";
+}
+
+<h1>Database Tables</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.ErrorMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @Model.SuccessMessage
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Database Information</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.CurrentDatabase != null)
+                {
+                    <dl class="row">
+                        <dt class="col-sm-4">Database Name:</dt>
+                        <dd class="col-sm-8">@Model.CurrentDatabase.DatabaseName</dd>
+                        
+                        <dt class="col-sm-4">Server:</dt>
+                        <dd class="col-sm-8">@Model.CurrentDatabase.Server?.ServerName</dd>
+                        
+                        <dt class="col-sm-4">Description:</dt>
+                        <dd class="col-sm-8">@Model.CurrentDatabase.Description</dd>
+                    </dl>
+                }
+                else
+                {
+                    <p>No database selected. <a asp-page="/Database">Select a database</a></p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Database Selection</h5>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="form-group mb-3">
+                        <label for="databaseId">Select Database:</label>
+                        <select class="form-control" id="databaseId" name="databaseId" onchange="this.form.submit()">
+                            <option value="">-- Select Database --</option>
+                            @foreach (var db in Model.Databases)
+                            {
+                                <option value="@db.DatabaseId" selected="@(Model.DatabaseId == db.DatabaseId)">@db.DatabaseName</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#getDatabaseModal">
+                    Get Database
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.CurrentDatabase != null)
+{
+    <div class="card">
+        <div class="card-header">
+            <h5>Tables in @Model.CurrentDatabase.DatabaseName</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Tables != null && Model.Tables.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Table ID</th>
+                            <th>Schema</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Row Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var table in Model.Tables)
+                        {
+                            <tr>
+                                <td>@table.TableId</td>
+                                <td>@table.DatabaseObject?.SchemaName</td>
+                                <td>@table.DatabaseObject?.ObjectName</td>
+                                <td>@table.DatabaseObject?.ObjectType?.TypeName</td>
+                                <td>@table.RowCount</td>
+                                <td>
+                                    <a asp-page="/TableDetails" asp-route-tableId="@table.TableId" class="btn btn-sm btn-primary">View Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No tables found in this database.</p>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        Please select a database to view its tables.
+    </div>
+}
+
+<!-- Get Database Modal -->
+<div class="modal fade" id="getDatabaseModal" tabindex="-1" aria-labelledby="getDatabaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="GetExternalDatabase">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="getDatabaseModalLabel">Connect to External Database</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="serverName" class="form-label">Server Name</label>
+                        <input type="text" class="form-control" id="serverName" name="serverName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="databaseName" class="form-label">Database Name</label>
+                        <input type="text" class="form-control" id="databaseName" name="databaseName" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="useIntegratedSecurity" name="useIntegratedSecurity" checked>
+                        <label class="form-check-label" for="useIntegratedSecurity">Use Windows Authentication</label>
+                    </div>
+                    <div id="sqlAuthFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">SQL Username</label>
+                            <input type="text" class="form-control" id="username" name="username">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">SQL Password</label>
+                            <input type="password" class="form-control" id="password" name="password">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Connect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle SQL Authentication fields based on checkbox
+        document.getElementById('useIntegratedSecurity').addEventListener('change', function() {
+            const sqlAuthFields = document.getElementById('sqlAuthFields');
+            sqlAuthFields.style.display = this.checked ? 'none' : 'block';
+            
+            // Clear fields when hidden
+            if (this.checked) {
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        });
+    </script>
+} 

@@ -1,0 +1,83 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Data Dictionary Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Data Dictionary</h1>
+    <p>Welcome to the Data Dictionary application. This application provides a comprehensive view of database structures.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Database Information</h5>
+            </div>
+            <div class="card-body">
+                <p>Server: (localdb)\MSSQLLocalDB</p>
+                <p>Database: datadict</p>
+                <p>Connection: Using Dapper for efficient data access</p>
+                <a asp-page="/Database" class="btn btn-primary">View Database</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Features</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>View database tables and their structures</li>
+                    <li>Generate SQL scripts for database objects</li>
+                    <li>Explore relationships between tables</li>
+                    <li>Document database objects</li>
+                </ul>
+                <a asp-page="/Tables" class="btn btn-primary">Browse Tables</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Navigation</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Tables</h5>
+                                <p class="card-text">Browse all tables in the database</p>
+                                <a asp-page="/Tables" class="btn btn-outline-primary">View Tables</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Database</h5>
+                                <p class="card-text">View database information</p>
+                                <a asp-page="/Database" class="btn btn-outline-primary">View Database</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Documentation</h5>
+                                <p class="card-text">Access database documentation</p>
+                                <a href="#" class="btn btn-outline-primary">View Docs</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

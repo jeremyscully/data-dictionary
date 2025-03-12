@@ -1,0 +1,198 @@
+/* Theme CSS file */
+
+/* Default Theme */
+:root {
+    --primary-color: #258cfb;
+    --secondary-color: #6c757d;
+    --background-color: #ffffff;
+    --text-color: #212529;
+    --navbar-bg: #ffffff;
+    --navbar-text: #212529;
+    --footer-bg: #f8f9fa;
+    --footer-text: #6c757d;
+    --card-bg: #ffffff;
+    --card-border: #dee2e6;
+    --input-bg: #ffffff;
+    --input-border: #ced4da;
+    --button-primary-bg: #258cfb;
+    --button-primary-text: #ffffff;
+    --table-stripe-bg: rgba(0, 0, 0, 0.05);
+    --table-hover-bg: rgba(0, 0, 0, 0.075);
+    --table-border-color: #dee2e6;
+}
+
+/* Netflix Theme */
+.netflix-theme {
+    --primary-color: #e50914;
+    --secondary-color: #564d4d;
+    --background-color: #141414;
+    --text-color: #ffffff;
+    --navbar-bg: #000000;
+    --navbar-text: #ffffff;
+    --footer-bg: #000000;
+    --footer-text: #999999;
+    --card-bg: #181818;
+    --card-border: #333333;
+    --input-bg: #333333;
+    --input-border: #444444;
+    --button-primary-bg: #e50914;
+    --button-primary-text: #ffffff;
+    --table-stripe-bg: rgba(255, 255, 255, 0.05);
+    --table-hover-bg: rgba(255, 255, 255, 0.1);
+    --table-border-color: #333333;
+}
+
+/* Seattle Housing Authority Theme */
+.seattle-housing-theme {
+    --primary-color: #0073b1;
+    --secondary-color: #6c8b98;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --navbar-bg: #0073b1;
+    --navbar-text: #ffffff;
+    --footer-bg: #004e7c;
+    --footer-text: #ffffff;
+    --card-bg: #ffffff;
+    --card-border: #b7d9ed;
+    --input-bg: #f5f9fc;
+    --input-border: #b7d9ed;
+    --button-primary-bg: #0073b1;
+    --button-primary-text: #ffffff;
+    --table-stripe-bg: rgba(183, 217, 237, 0.2);
+    --table-hover-bg: rgba(183, 217, 237, 0.4);
+    --table-border-color: #b7d9ed;
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.navbar {
+    background-color: var(--navbar-bg) !important;
+    border-bottom-color: var(--card-border) !important;
+}
+
+.navbar-light .navbar-brand,
+.navbar-light .navbar-nav .nav-link {
+    color: var(--navbar-text) !important;
+}
+
+.footer {
+    background-color: var(--footer-bg) !important;
+    color: var(--footer-text) !important;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+}
+
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.btn-primary {
+    background-color: var(--button-primary-bg);
+    border-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+
+/* Table styles */
+.table {
+    color: var(--text-color);
+    border-color: var(--table-border-color);
+}
+
+.table th {
+    background-color: var(--card-bg);
+    border-color: var(--table-border-color);
+}
+
+.table td {
+    border-color: var(--table-border-color);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--table-stripe-bg);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--table-hover-bg);
+}
+
+/* Netflix theme specific table overrides */
+.netflix-theme .table {
+    color: #ffffff !important;
+}
+
+.netflix-theme .table-striped tbody tr:nth-of-type(odd) {
+    color: #ffffff !important;
+}
+
+.netflix-theme .table-striped tbody tr:nth-of-type(even) {
+    color: #ffffff !important;
+}
+
+/* Seattle Housing Authority theme specific overrides */
+.seattle-housing-theme .navbar-light .navbar-brand,
+.seattle-housing-theme .navbar-light .navbar-nav .nav-link {
+    color: var(--navbar-text) !important;
+    font-weight: bold;
+}
+
+.seattle-housing-theme .btn-primary {
+    font-weight: bold;
+}
+
+.seattle-housing-theme .table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.border-bottom {
+    border-bottom-color: var(--card-border) !important;
+}
+
+.border-top {
+    border-top-color: var(--card-border) !important;
+}
+
+/* Theme switcher styles */
+.theme-switcher {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.theme-option {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.theme-option.active {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.theme-option img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.theme-option-label {
+    text-align: center;
+    padding: 8px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-weight: bold;
+} 
